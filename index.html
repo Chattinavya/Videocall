@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ZEGOCLOUD Zoom-like Video Call</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f5f7fa;
+      padding: 30px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    input {
+      padding: 12px;
+      width: 250px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #videoContainer {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-gap: 10px;
+      width: 100%;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      height: calc(100vh - 200px);
+    }
+
+    .ZegoVideo {
+      width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🔒 ZEGOCLOUD Zoom-like Video Call (3 Members)</h2>
+
+  <input type="text" id="roomInput" placeholder="Enter Room Password" />
+  <button onclick="startCall()">Join Call</button>
+
+  <div id="videoContainer"></div>
+
+  <!-- ✅ ZEGOCLOUD UIKit SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.6.0/zego-uikit-prebuilt.min.js"></script>
+
+  <script>
+    async function startCall() {
+      const appID = 759456110; // ✅ Replace with your AppID
+      const serverSecret = '36b4ad60d69762bd51c452b6d47f248f'; // ✅ Replace with your ServerSecret
+
+      const roomID = document.getElementById("roomInput").value.trim();
+      if (!roomID) {
+        alert("Please enter a password to join the room");
+        return;
+      }
+
+      // Each user needs a unique ID
+      const userID = 'user_' + Math.floor(Math.random() * 100000);
+      const userName = userID;
+
+      // Generate the ZEGOCLOUD Kit token
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        appID,
+        serverSecret,
+        roomID,
+        userID,
+        userName
+      );
+
+      // Create the video call instance
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+      zp.joinRoom({
+        container: document.getElementById('videoContainer'),
+        scenario: {
+          mode: ZegoUIKitPrebuilt.VideoConference
+        },
+        // For up to 3 users in the room
+        maxUsers: 5,
+        showPreJoinView: false,
+        sharedLinks: [
+          {
+            name: 'Room Link',
+            url:
+              window.location.protocol + '//' +
+              window.location.host +
+              window.location.pathname +
+              '?roomID=' + roomID,
+          },
+        ],
+      });
+    }
+
+    // Optional: auto join if ?roomID=xxx is in the URL
+    window.addEventListener('load', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomID = urlParams.get('roomID');
+      if (roomID) {
+        document.getElementById('roomInput').value = roomID;
+        startCall();
+      }
+    });
+  </script>
+
+</body>
+</html>
